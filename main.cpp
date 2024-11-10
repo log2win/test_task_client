@@ -27,6 +27,12 @@ class ProcessFileOnServer : public QRunnable {
         QTcpSocket tcpSocket;
         tcpSocket.connectToHost(SERVER_IP, SERVER_PORT);
         tcpSocket.waitForConnected();
+        if (tcpSocket.state() ==
+            QAbstractSocket::SocketState::UnconnectedState) {
+            std::cerr << "Can't connect to server"
+                      << std::endl;
+            return;
+        }
         if (!sendFile(tcpSocket)) {
             return;
         }
@@ -109,7 +115,7 @@ void appLoop() {
         auto pathStr = command.mid(1, command.size() - 2);
         QFileInfo path(pathStr);
         if (!path.exists()) {
-            output << "File at absolute path: \"" << path.absolutePath()
+            output << "File at absolute path: \"" << path.absoluteFilePath()
                    << "\" is not found\n";
             output.flush();
             continue;
